@@ -17,19 +17,32 @@
 	--accent-color-link-visited: rgb(148, 53, 226);
 }
 
+body {
+	background: var(--light-background-color);
+}
+
+a, p q, h1, h2 {
+	color: var(--light-text-color);
+}
+
+.projects-page-flex-item {
+	background-color: var(--light-background-color-2);
+}
+
 @media (prefers-color-scheme: light) {
 
 	body {
 		background: var(--light-background-color);
 	}
 
-	a, p {
+	a, p, q, h1, h2 {
 		color: var(--light-text-color);
 	}
 
 	.projects-page-flex-item {
 		background-color: var(--light-background-color-2);
 	}
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,7 +51,7 @@
 		background: var(--dark-background-color);
 	}
 
-	a, p {
+	a, p, q, h1, h2 {
 		color: var(--dark-text-color);
 	}
 
@@ -48,7 +61,7 @@
 
 }
 
-a, p {
+a, p, q, h1, h2 {
 	font-family: 'Hind Madurai', sans-serif;
 }
 
@@ -83,7 +96,17 @@ a, p {
 }
 
 .material-symbols-outlined {
+	/* text-decoration: underline; */
 	text-decoration-color: var(--accent-color-red);
+	/* cursor: pointer;
+	margin-right: 5px; */
+}
+
+.back-button {
+	text-decoration: underline;
+	text-decoration-color: var(--accent-color-link);
+	cursor: pointer;
+	margin-right: 5px;
 }
 
 .symbols-small {
@@ -103,6 +126,14 @@ a, p {
 	height: 250px;
 	border-radius: 2.5%;
 	text-decoration: none;
+	transition-duration: 1s;
+}
+
+.projects-page-flex-item:hover {
+	margin: 25px;
+	/* box-shadow: 0px 10px var(--accent-color-link), 10px 10px var(--accent-color-red); */
+	box-shadow: 10px 10px var(--accent-color-red);
+	transition-duration: 1s;
 }
 
 .home-page-grid-container {
@@ -128,4 +159,54 @@ a, p {
 
 .home-page-link:visited {
 	text-decoration-color: var(--accent-color-link-visited);
+
+	margin-left: 25px;
+	margin-right: 25px;
+}
+
+.project-content-container > img {
+	display: flex;
+	margin-left: auto;
+	margin-right: auto;
+	box-shadow: 0px 5px var(--accent-color-red);
+}
+
+.project-content-container > p {
+	text-align: center;
+}
+
+.project-content-container > q {
+	display: block;
+	text-align: center;
+	margin-top: 8px;
+	font-size: 12px;
+}
+
+.project-content-container > h1 {
+	font-size: 24px;
+	text-align: center;
+}
+
+.project-content-container > h2 {
+	margin-top: 48px;
+	font-size: 18px;
+	text-align: center;
+	text-decoration: underline;
+	text-decoration-color: var(--accent-color-link);
+}
+
+.code-container {
+	display: flex;
+	margin: 20px;
+	margin-bottom: 32px;
+	background-color: var(--dark-background-color-2);
+	border-radius: 5px;
+	box-shadow: inset 14px 0px 0px -10px var(--light-background-color-2);
+}
+
+code {
+	margin: 5px;
+	margin-left: 10px;
+	color: var(--dark-text-color);
+	overflow: auto;
 }
