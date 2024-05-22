@@ -1,0 +1,313 @@
+<!DOCTYPE html><html><head><title>Server &amp; Client Test</title><meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui=1"><meta charset="UTF-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content=""><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icon64.png"><link rel="apple-touch-icon" sizes="180x180" href="icon180.png"><link rel="icon" type="image/png" sizes="32x32" href="icon32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon16.png"><style>html,body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  overflow:hidden;
+  font-family: Verdana;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#canvaswrapper {
+  text-align: center ;
+}
+</style><style>@font-face { font-family: "BitCell" ; src: url("fonts/BitCell.ttf") format("truetype"); }</style><script>window.fonts = ["BitCell"]</script></head><body class="noselect custom-cursor" oncontextmenu="return false;"><div id="canvaswrapper"></div><script type="text/javascript">var resources = {"images":[{"file":"icon.png","version":0,"size":0,"properties":{}}],"assets":[],"maps":{},"sounds":[],"music":[]};
+var graphics = "M1";
+
+</script><script type="text/javascript">var orientation = 'any' ;
+var aspect = 'free' ;
+var ms_libs = [] ;
+window.skip_service_worker = true;
+window.exported_project = true;
+window.ms_use_server = true ;
+</script><script src="runner.js"></script><script src="microengine.js"></script></body><script type="text/javascript">//
+//
+// The game is started with the code below.
+// Once you have received the "started" signal (see below),
+// you can do the following:
+// 1) Inject functions or objects into the global context of the microStudio engine, example:
+//
+//   window.player.setGlobal("special_callback",function(x) { console.info(x) }) ;
+//   // Your microScript code can now call the "special_callback" function
+//
+// 2) Call microScript global functions from your JavaScript code, example:
+//
+//   window.player.call("call_me_from_javascript",[10,1000]) ;
+//   // arguments to the function call are provided as an array
+//
+// 3) Run a microScript code snippet from your JavaScript code, example:
+//
+//   window.player.exec("player.position_x = 50",function(result) { console.log(result) ; }) ;
+//
+
+window.addEventListener("load",function() {
+  window.player = new Player(function(event) {
+    if (event.name == "started") {
+      // signal that the game is started
+    }
+    else if (event.name == "log") {
+      // console.info(event.data) ;
+    }
+  }) ;
+  document.body.focus() ;
+}) ;
+
+</script><script id="code" type="text/x-microscript">
+
+
+init = function() {
+  
+  server = new ServerConnection()
+  lastStatus = ""
+  connectionTimeout = 0
+  timeConnected = 0
+  connected = false
+  currentMessage = ""
+  pingTimer = -1
+  
+}
+
+update = function() {
+  
+  switch(server.status) {
+    
+    case "disconnected": {
+      
+      if (lastStatus != "connecting" && lastStatus != "disconnected" && connected == true) {
+        
+        print("disconnected")
+        
+      }
+      
+      connected = false
+      
+      if (lastStatus == "connecting" || lastStatus == "connected") {
+        
+        print("could not connect")
+        
+        connectionTimeout = system.time() + 3000
+        
+      } else if (system.time() >= connectionTimeout) {
+        
+        print("retrying...")
+        
+        server = new ServerConnection()
+        
+      }
+      
+    break}
+    
+    case "connecting": {
+      
+      if (lastStatus != "connecting") {print("connecting")}
+      
+      timeConnected = system.time()
+      
+    break}
+    
+    case "connected": {
+      
+      if (system.time() >= timeConnected + 1000 && !connected) {
+        
+        print("connected!")
+        
+        connected = true
+        
+      }
+      
+    break}
+    
+  }
+  
+  lastStatus = server.status
+  
+  if (server.status == "connected") {
+    
+    for (let i = 0; i < server.messages.length; i++) {
+      
+      switch(typeof(server.messages[i])) {
+        
+        case "string": {
+          
+          print("sever sent new message")
+          
+          currentMessage = server.messages[i]
+          
+        break}
+        
+        case "number": {
+          
+          if (server.messages[i] == 0) {
+            
+            print("server pinged back")
+            
+            pingTimer = 1
+            
+          }
+          
+        break}
+        
+      }
+      
+    }
+    
+    if (pingTimer == 1) {
+      
+      pingTimer = system.time() + 3000
+      
+    } else if (pingTimer < system.time() && pingTimer != 0) {
+      
+      pingTimer = -1
+      
+    }
+    
+    if (connected) {
+      
+      if (keyboard.press.Z && pingTimer == -1) {
+        
+        pingTimer = 0
+        server.send(0)
+        
+      }
+      
+    }
+    
+  }
+  
+}
+
+draw = function() {
+  
+  screen.clear("rgb(24,24,43)")
+  
+  screen.setDrawAnchor(1, -1)
+  switch (server.status) {
+    
+    case "disconnected": {
+
+      screen.drawText("disconnected.", screen.width / 2, screen.height / -2, 10,"rgb(197,22,22)")
+      
+    break}
+    
+    case "connecting": {
+
+      screen.drawText("connecting...", screen.width / 2, screen.height / -2, 10,"rgb(197,138,22)")
+      
+      
+    break}
+    
+    case "connected": {
+      
+      if (connected) {
+        
+        screen.drawText("connected!", screen.width / 2, screen.height / -2, 10,"rgb(22,197,22)")
+        
+      } else {
+        
+        screen.drawText("almost there...", screen.width / 2, screen.height / -2, 10,"rgb(197,138,22)")
+        
+      }
+      
+    break}
+    
+  }
+  
+  if (connected) {
+    
+    screen.setDrawAnchor(-1, 1)
+    
+    screen.drawText(currentMessage, screen.width / -2.02, screen.height / 2.02, 15, "#FFF")
+    
+    screen.setDrawAnchor(0, 0)
+    
+    if (pingTimer == 0) {
+      
+      screen.drawText("waiting for ping...", 0, 0, 20,"rgb(166,166,166)")
+      
+    } else if (pingTimer > 0) {
+      
+      screen.drawText("got pinged!", 0, 0, 20, "#FFF")
+      
+    }
+    
+  }
+  
+}
+
+
+
+serverInit = function() {
+  
+  server = new Server()
+  
+  currentMessage = ""
+  lastMessage = ""
+  
+}
+
+serverUpdate = function() {
+  
+  // Print new connections and send them the current message
+  
+  let newConnections = []
+  
+  for (let i = 0; i < server.new_connections.length; i++) {
+    
+    print("new connection, id #" + server.new_connections[i].id)
+    
+    server.new_connections[i].send(currentMessage)
+    
+    newConnections = []
+    
+  }
+  
+  // Print disconnected clients
+  
+  for (let i = 0; i < server.closed_connections.length; i++) {
+    
+    print("closed connection, id #" + server.closed_connections[i].id)
+    
+  }
+  
+  // Check clients for ping request and ping back
+  
+  for (let i = 0; i < server.messages.length; i++) {
+    
+    if (server.messages[i].data == 0) {
+      
+      print("ping from id #" + server.messages[i].connection.id)
+      
+      server.messages[i].connection.send(0)
+      
+    }
+    
+  }
+  
+  // Send clients the current message if changed
+  
+  if (currentMessage != lastMessage) {
+    
+    print("sending new message")
+    
+    for (let i = 0; i < server.active_connections.length; i++) {
+      
+      print("sending message to id #" + server.active_connections[i].id)
+      
+      server.active_connections[i].send(currentMessage)
+      
+    }
+    
+    lastMessage = currentMessage
+    
+  }
+  
+  
+}
+
+
+</script></html>
