@@ -1,4 +1,4 @@
-# joejoemars1.github.io
+# joejoemars.github.io
 
 Learning HTML + CSS and how git/GitHub work aswell
 
